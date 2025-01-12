@@ -1,6 +1,7 @@
 import { useContext } from "react"
 import { FavoritesContext } from "../../context/FavoritesContext"
 import { Container } from "react-bootstrap";
+import { Helmet } from "react-helmet";
 
 export default function Wishlist() {
 
@@ -14,6 +15,9 @@ export default function Wishlist() {
 
     return (
         <>
+            <Helmet>
+                <title>Wishlist</title>
+            </Helmet>
             {
                 favorites.length != 0 ? (
                     <Container className="my-5">
