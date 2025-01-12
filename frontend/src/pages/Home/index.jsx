@@ -5,21 +5,28 @@ import { BsClipboardData } from "react-icons/bs";
 import { LuHandshake } from "react-icons/lu";
 import Slider from "../../components/Slider";
 import Helmet from "react-helmet"
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FavoritesContext } from "../../context/FavoritesContext";
 export default function Home() {
     let { data, isLoading, refetch } = useGetConsultingsQuery()
-    let alldata = data
-    console.log(alldata);
-    
+    let [alldata, setAlldata] = useState([])
+
+    useEffect(() => {
+        if (!isLoading) {
+            setAlldata(data)
+        }
+    }, [data])
+
     let [deleteConsulting] = useDeleteConsultingMutation()
-    let {favorites, setFavorites} = useContext(FavoritesContext)
-    
+    let { favorites, setFavorites } = useContext(FavoritesContext)
+
+    // delete
     const handleDelete = async (id) => {
         await deleteConsulting(id)
         refetch()
     }
-    
+
+    // add to favs
     const handleFavorites = (item) => {
         let findFavs = favorites.find(favorite => favorite._id == item._id)
         if (findFavs) {
@@ -29,12 +36,33 @@ export default function Home() {
         }
     }
 
+    // search
     const handleSearch = (e) => {
-        console.log(e);
-        if (e == "") {
-            alldata = data
+        const searchValue = e.trim().toLowerCase();
+        if (searchValue == "") {
+            setAlldata(data)
+        } else {
+            let searchName = alldata.filter((item) => item.name.toLowerCase().startsWith(searchValue))
+            setAlldata(searchName)
         }
-        
+    }
+
+    // sort
+    const handleSort = (e) => {
+        switch (e.target.value) {
+            case "a-z":
+                let sortedAZ = alldata.toSorted((a, b) => a.name.localeCompare(b.name))
+                setAlldata(sortedAZ);
+                break;
+            case "z-a":
+                let sortedZA = alldata.toSorted((a, b) => b.name.localeCompare(a.name))
+                setAlldata(sortedZA);
+                break;
+
+            default:
+                setAlldata(data)
+                break;
+        }
     }
 
 
@@ -127,9 +155,11 @@ export default function Home() {
                                     <h1 className="text-5xl text-[#092C3F] my-4 font-bold">Our Team Mambers</h1>
                                 </div>
                                 <div className="my-2">
-                                    <input type="text" className="py-1 px-2 border" onChange={(e) => handleSearch(e.target.value)}/>
-                                    <select>
-                                        <option value="a-z"></option>
+                                    <input type="text" className="py-1 px-2 border" onChange={(e) => handleSearch(e.target.value)} />
+                                    <select onChange={(e) => handleSort(e)} className="ml-2 px-2 py-1 border">
+                                        <option>Sort by name</option>
+                                        <option value="a-z">A-Z</option>
+                                        <option value="z-a">Z-A</option>
                                     </select>
                                 </div>
                                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
